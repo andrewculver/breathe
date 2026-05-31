@@ -16,6 +16,6 @@ Install these by hand:
 /bin/zsh -c "$(curl -fsSL https://raw.githubusercontent.com/andrewculver/breathe/main/breathe.sh)"
 ```
 
-Follow the prompts. It names your Mac, installs Claude Code, Homebrew, and the
-GitHub CLI, signs you in to GitHub, sets up your SSH key, and clones your
-`zshrc` dotfiles.
+Follow the prompts. It names your Mac, installs Claude Code, Homebrew, the
+GitHub CLI, and Codex CLI, signs you in to GitHub, sets up your SSH key, and
+clones your `zshrc` dotfiles.

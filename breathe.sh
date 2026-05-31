@@ -244,6 +244,16 @@ step_github_cli() {
   ok "GitHub CLI installed."
 }
 
+step_codex_cli() {
+  if have codex; then
+    ok "Codex CLI is installed"
+    return 0
+  fi
+  log "Installing Codex CLI"
+  brew install codex || die "Failed to install codex."
+  ok "Codex CLI installed."
+}
+
 step_github_auth() {
   if gh auth status >/dev/null 2>&1; then
     ok "Authenticated with GitHub as $(gh api user --jq .login 2>/dev/null)"
@@ -368,6 +378,7 @@ main() {
   step_claude_code
   step_homebrew     # may respawn + exit
   step_github_cli
+  step_codex_cli
   step_github_auth
   step_ssh_agent
   step_dotfiles
