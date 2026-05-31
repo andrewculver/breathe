@@ -180,13 +180,25 @@ step_names() {
   # Bonjour / local hostname allows only letters, digits, and hyphens.
   local_host="${local_host// /-}"
 
-  info "Applying names (you may be asked for your password)…"
-  [[ -n "$computer"   ]] && sudo scutil --set ComputerName  "$computer"
-  [[ -n "$local_host" ]] && sudo scutil --set LocalHostName "$local_host"
-  [[ -n "$host"       ]] && sudo scutil --set HostName      "$host"
+  # Only the names that actually changed need setting — skip sudo entirely
+  # (and the password prompt) if nothing changed.
+  local -a changes
+  [[ -n "$computer"   && "$computer"   != "$cur_computer" ]] && changes+=("ComputerName=$computer")
+  [[ -n "$local_host" && "$local_host" != "$cur_local"    ]] && changes+=("LocalHostName=$local_host")
+  [[ -n "$host"       && "$host"       != "$cur_host"     ]] && changes+=("HostName=$host")
+
+  if (( ${#changes} == 0 )); then
+    ok "Names unchanged."
+  else
+    info "Applying names (you may be asked for your password)…"
+    local change
+    for change in "${changes[@]}"; do
+      sudo scutil --set "${change%%=*}" "${change#*=}"
+    done
+    ok "Named your Mac."
+  fi
 
   touch "$stamp"
-  ok "Named your Mac."
 }
 
 step_claude_code() {
