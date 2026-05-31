@@ -145,7 +145,6 @@ APPLESCRIPT
 ensure_local() {
   mkdir -p "$BREATHE_HOME"
   if [[ "${0:A}" != "${BREATHE_BIN:A}" ]]; then
-    info "Caching breathe at $BREATHE_BIN"
     if ! curl -fsSL "$BREATHE_URL" -o "$BREATHE_BIN" 2>/dev/null; then
       warn "Couldn't download breathe from $BREATHE_URL — respawns may not work."
       warn "Set BREATHE_URL to your repo's raw breathe.sh URL."
