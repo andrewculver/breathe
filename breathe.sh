@@ -62,6 +62,22 @@ banner() {
 
 have() { command -v "$1" >/dev/null 2>&1; }
 
+# Prompt for a value, showing the current/default in brackets. Reads from the
+# terminal (not stdin) so it works even under `curl | zsh`. Empty input keeps
+# the default.
+#   ask <varname> <prompt> <default>
+ask() {
+  local __var="$1" __prompt="$2" __default="$3" __reply
+  if [[ -n "$__default" ]]; then
+    print -n -- "    ${C_BOLD}${__prompt}${C_RESET} [${C_DIM}${__default}${C_RESET}]: "
+  else
+    print -n -- "    ${C_BOLD}${__prompt}${C_RESET}: "
+  fi
+  IFS= read -r __reply </dev/tty 2>/dev/null || __reply=""
+  [[ -z "$__reply" ]] && __reply="$__default"
+  typeset -g "${__var}=${__reply}"
+}
+
 # The private key to treat as primary for github.com. Prefer modern key types,
 # else fall back to the first private key that has a .pub sibling.
 primary_ssh_key() {
@@ -140,6 +156,37 @@ ensure_local() {
 # ----------------------------------------------------------------------------
 # Steps
 # ----------------------------------------------------------------------------
+
+step_names() {
+  # Only ask once — don't nag on the Homebrew respawn.
+  mkdir -p "$BREATHE_HOME"
+  local stamp="$BREATHE_HOME/.named"
+  [[ -f "$stamp" ]] && return 0
+
+  log "Name your Mac"
+
+  local cur_computer cur_local cur_host
+  cur_computer="$(scutil --get ComputerName 2>/dev/null)"
+  cur_local="$(scutil --get LocalHostName 2>/dev/null)"
+  cur_host="$(scutil --get HostName 2>/dev/null)"
+  [[ -n "$cur_host" ]] || cur_host="$cur_local"
+
+  local computer local_host host
+  ask computer   "Computer name (Finder & Sharing)"     "$cur_computer"
+  ask local_host "Bonjour name (.local)"                "$cur_local"
+  ask host       "Hostname"                             "$cur_host"
+
+  # Bonjour / local hostname allows only letters, digits, and hyphens.
+  local_host="${local_host// /-}"
+
+  info "Applying names (you may be asked for your password)…"
+  [[ -n "$computer"   ]] && sudo scutil --set ComputerName  "$computer"
+  [[ -n "$local_host" ]] && sudo scutil --set LocalHostName "$local_host"
+  [[ -n "$host"       ]] && sudo scutil --set HostName      "$host"
+
+  touch "$stamp"
+  ok "Named your Mac."
+}
 
 step_homebrew() {
   if [[ -n "$(brew_prefix)" ]]; then
@@ -294,8 +341,9 @@ main() {
     return 0
   fi
 
-  ensure_local
   banner
+  step_names        # first, before anything else
+  ensure_local
 
   step_homebrew     # may respawn + exit
   step_github_cli
