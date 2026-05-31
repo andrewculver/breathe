@@ -262,8 +262,14 @@ step_dotfiles() {
 finish() {
   print -- ""
   ok "${C_BOLD}All done — your Mac is breathing.${C_RESET}"
-  info "Open a new terminal (or run: source ~/.zshrc) to load your config."
   print -- ""
+  print -- "${C_DIM}    And the LORD God formed man of the dust of the ground, and${C_RESET}"
+  print -- "${C_DIM}    breathed into his nostrils the breath of life; and man${C_RESET}"
+  print -- "${C_DIM}    became a living soul.${C_RESET}"
+  print -- "${C_DIM}                                              — Genesis 2:7${C_RESET}"
+  print -- ""
+  # Open a fresh shell so the new ~/.zshrc (brew, dotfiles, etc.) is loaded.
+  spawn_new_shell
 }
 
 # ----------------------------------------------------------------------------
