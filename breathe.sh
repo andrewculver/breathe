@@ -277,7 +277,7 @@ step_dock() {
   # Default Apple apps we'd rather not clutter a fresh Dock with. Names are the
   # Dock labels; --remove is a no-op when the item is already gone.
   local -a remove=(
-    Messages Mail Maps Photos FaceTime Calendar Contacts Reminders
+    Phone Messages Mail Maps Photos FaceTime Calendar Contacts Reminders
     Notes Freeform Games TV Music Podcasts News "App Store" "System Settings"
     "iPhone Mirroring"
   )
