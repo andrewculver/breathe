@@ -10,6 +10,16 @@ So after those steps, breathe opens a fresh Terminal window via AppleScript,
 re-runs itself, detects the completed step, and carries on. It keeps going
 until everything's set up.
 
+## Prerequisites
+
+A few GUI apps are best installed by hand before (or alongside) running breathe:
+
+- **1Password for Mac** — [direct download](https://downloads.1password.com/mac/1Password.zip)
+  (1Password 8 ships as a `.zip`, not a `.dmg`; see the
+  [downloads page](https://1password.com/downloads/mac))
+- **Tailscale** — [Mac App Store](https://apps.apple.com/us/app/tailscale/id1475387142?mt=12)
+- **Screens 5** — [Mac App Store](https://apps.apple.com/us/app/screens-5-vnc-remote-desktop/id1663047912)
+
 ## Run it
 
 Paste this into Terminal:
