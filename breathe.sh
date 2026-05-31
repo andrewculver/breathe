@@ -199,6 +199,10 @@ step_preferences() {
   # Hide icons on the desktop.
   defaults write com.apple.finder CreateDesktop false; killall Finder 2>/dev/null
 
+  # Force Dark mode (also clears the "Auto" light/dark schedule). Via System
+  # Events so running apps pick it up immediately — `defaults write` wouldn't.
+  osascript -e 'tell application "System Events" to tell appearance preferences to set dark mode to true' 2>/dev/null
+
   ok "Preferences set."
 }
 
