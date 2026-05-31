@@ -289,6 +289,7 @@ step_dock() {
   # Apps we *do* want — added only if installed and not already in the Dock.
   local -a add=(
     "/Applications/Tailscale.app"
+    "/Applications/1Password.app"
     "/System/Applications/Utilities/Terminal.app"
     "/Applications/Codex.app"
   )
