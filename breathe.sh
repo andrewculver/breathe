@@ -278,7 +278,7 @@ step_dock() {
   # Dock labels; --remove is a no-op when the item is already gone.
   local -a remove=(
     Messages Mail Maps Photos FaceTime Calendar Contacts Reminders
-    Notes Freeform TV Music Podcasts News "App Store" "System Settings"
+    Notes Freeform Games TV Music Podcasts News "App Store" "System Settings"
     "iPhone Mirroring"
   )
   local name
