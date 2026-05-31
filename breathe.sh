@@ -263,6 +263,56 @@ step_codex_cli() {
   ok "Codex CLI installed."
 }
 
+step_dock() {
+  log "Tidying the Dock"
+
+  # dockutil makes Dock edits painless. It needs Homebrew, so this step runs
+  # after step_homebrew.
+  if ! have dockutil; then
+    info "Installing dockutil…"
+    brew install dockutil >/dev/null 2>&1 \
+      || { warn "Couldn't install dockutil — skipping Dock setup."; return 0; }
+  fi
+
+  # Default Apple apps we'd rather not clutter a fresh Dock with. Names are the
+  # Dock labels; --remove is a no-op when the item is already gone.
+  local -a remove=(
+    Messages Mail Maps Photos FaceTime Calendar Contacts Reminders
+    Notes TV Music Podcasts News "App Store" "System Settings"
+    "iPhone Mirroring"
+  )
+  local name
+  for name in "${remove[@]}"; do
+    dockutil --remove "$name" --no-restart >/dev/null 2>&1
+  done
+
+  # Apps we *do* want — added only if installed and not already in the Dock.
+  local -a add=(
+    "/Applications/Tailscale.app"
+    "/System/Applications/Utilities/Terminal.app"
+    "/Applications/Codex.app"
+  )
+  local app label
+  for app in "${add[@]}"; do
+    label="${app:t:r}"
+    if [[ ! -d "$app" ]]; then
+      info "Skipping ${label} (not installed)"
+      continue
+    fi
+    # --replacing pins the app to the persistent section, and makes re-runs a
+    # no-op instead of stacking duplicates. (A plain --add would skip apps that
+    # merely *appear* in the Dock's recent-apps section while running.)
+    dockutil --add "$app" --replacing "$label" --no-restart >/dev/null 2>&1
+  done
+
+  # Drop the "recent applications" section (and its dividers) — running apps
+  # that aren't pinned would otherwise show up there as duplicates.
+  defaults write com.apple.dock show-recents -bool false
+
+  killall Dock 2>/dev/null
+  ok "Dock tidied."
+}
+
 step_github_auth() {
   if gh auth status >/dev/null 2>&1; then
     ok "Authenticated with GitHub as $(gh api user --jq .login 2>/dev/null)"
@@ -389,6 +439,7 @@ main() {
   step_homebrew     # may respawn + exit
   step_github_cli
   step_codex_cli
+  step_dock
   step_github_auth
   step_ssh_agent
   step_dotfiles

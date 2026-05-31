@@ -19,5 +19,6 @@ Install these by hand:
 ```
 
 Follow the prompts. It names your Mac, installs Claude Code, Homebrew, the
-GitHub CLI, and Codex CLI, signs you in to GitHub, sets up your SSH key, and
-clones your `zshrc` dotfiles.
+GitHub CLI, and Codex CLI, tidies the Dock (drops the stock Apple apps, adds
+Tailscale, Terminal, and Codex), signs you in to GitHub, sets up your SSH key,
+and clones your `zshrc` dotfiles.
