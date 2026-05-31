@@ -158,11 +158,6 @@ ensure_local() {
 # ----------------------------------------------------------------------------
 
 step_names() {
-  # Only ask once — don't nag on the Homebrew respawn.
-  mkdir -p "$BREATHE_HOME"
-  local stamp="$BREATHE_HOME/.named"
-  [[ -f "$stamp" ]] && return 0
-
   log "Name your Mac"
 
   local cur_computer cur_local cur_host
@@ -196,8 +191,6 @@ step_names() {
     done
     ok "Named your Mac."
   fi
-
-  touch "$stamp"
 }
 
 step_claude_code() {
