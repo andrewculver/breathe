@@ -193,6 +193,15 @@ step_names() {
   fi
 }
 
+step_preferences() {
+  log "Setting macOS preferences"
+
+  # Hide icons on the desktop.
+  defaults write com.apple.finder CreateDesktop false; killall Finder 2>/dev/null
+
+  ok "Preferences set."
+}
+
 step_claude_code() {
   if have claude || [[ -x "$LOCAL_BIN/claude" ]]; then
     ok "Claude Code is installed"
@@ -373,6 +382,7 @@ main() {
 
   banner
   step_names        # first, before anything else
+  step_preferences
   ensure_local
 
   step_claude_code
