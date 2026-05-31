@@ -24,6 +24,7 @@ BREATHE_HOME="${BREATHE_HOME:-$HOME/.breathe}"
 BREATHE_BIN="$BREATHE_HOME/breathe.sh"
 
 ZSHRC="$HOME/.zshrc"
+SSH_DIR="$HOME/.ssh"
 
 # Your personal zsh config repo, cloned from <github-username>/zshrc.
 DOTFILES_REPO="zshrc"
@@ -60,6 +61,19 @@ banner() {
 # ----------------------------------------------------------------------------
 
 have() { command -v "$1" >/dev/null 2>&1; }
+
+# The private key to treat as primary for github.com. Prefer modern key types,
+# else fall back to the first private key that has a .pub sibling.
+primary_ssh_key() {
+  local k pub
+  for k in "$SSH_DIR/id_ed25519" "$SSH_DIR/id_ecdsa" "$SSH_DIR/id_rsa"; do
+    [[ -f "$k" ]] && { print -- "$k"; return 0; }
+  done
+  for pub in "$SSH_DIR"/*.pub(N); do
+    k="${pub%.pub}"
+    [[ -f "$k" ]] && { print -- "$k"; return 0; }
+  done
+}
 
 # Homebrew's install prefix, by inspecting disk (works before brew is on PATH).
 brew_prefix() {
@@ -176,6 +190,51 @@ step_github_auth() {
   ok "Signed in to GitHub."
 }
 
+step_ssh_agent() {
+  local key; key="$(primary_ssh_key)"
+  if [[ -z "$key" ]]; then
+    warn "No SSH private key found in $SSH_DIR — skipping ssh-agent setup."
+    return 0
+  fi
+
+  log "Loading your SSH key into ssh-agent"
+
+  mkdir -p "$SSH_DIR"; chmod 700 "$SSH_DIR"
+
+  # Persist the keychain-backed agent config so the key is available in every
+  # future shell, not just this one. gh uploads the key to GitHub but doesn't
+  # do this part.
+  local cfg="$SSH_DIR/config"
+  touch "$cfg"; chmod 600 "$cfg"
+  if ! grep -qiE '^[[:space:]]*Host[[:space:]]+github\.com([[:space:]]|$)' "$cfg"; then
+    {
+      print -- ""
+      print -- "# >>> breathe:ssh >>>"
+      print -- "Host github.com"
+      print -- "  AddKeysToAgent yes"
+      print -- "  UseKeychain yes"
+      print -- "  IdentityFile $key"
+      print -- "# <<< breathe:ssh <<<"
+    } >> "$cfg"
+    ok "Wrote github.com SSH config."
+  fi
+
+  # Load every key that has a public counterpart into the running agent,
+  # storing any passphrase in the macOS keychain (you'll be prompted once).
+  local pub k
+  for pub in "$SSH_DIR"/*.pub(N); do
+    k="${pub%.pub}"
+    [[ -f "$k" ]] || continue
+    if ssh-add --apple-use-keychain "$k" 2>/dev/null; then
+      ok "Added ${k:t} to ssh-agent (saved to keychain)"
+    elif ssh-add "$k"; then
+      ok "Added ${k:t} to ssh-agent"
+    else
+      warn "Couldn't add ${k:t} to ssh-agent."
+    fi
+  done
+}
+
 step_dotfiles() {
   local user; user="$(gh api user --jq .login 2>/dev/null)"
   [[ -n "$user" ]] || die "Couldn't determine your GitHub username."
@@ -219,6 +278,7 @@ main() {
   step_homebrew     # may respawn + exit
   step_github_cli
   step_github_auth
+  step_ssh_agent
   step_dotfiles
 
   finish

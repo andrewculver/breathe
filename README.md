@@ -31,7 +31,10 @@ next step:
 2. **GitHub CLI** — `brew install gh`.
 3. **GitHub auth + SSH** — `gh auth login` over SSH, generating and uploading
    an SSH key for you.
-4. **Your dotfiles** — clones `your-username/zshrc` into `~/.zsh` and sources
+4. **ssh-agent** — loads the key into `ssh-agent` and the macOS keychain, and
+   writes an `~/.ssh/config` entry (`AddKeysToAgent`/`UseKeychain`) so it's
+   available in every future shell — `gh` uploads the key but doesn't do this.
+5. **Your dotfiles** — clones `your-username/zshrc` into `~/.zsh` and sources
    its `all.sh` from `~/.zshrc`.
 
 Every step is idempotent: re-running breathe at any point is safe. Config it
