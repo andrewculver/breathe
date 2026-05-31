@@ -25,6 +25,7 @@ BREATHE_BIN="$BREATHE_HOME/breathe.sh"
 
 ZSHRC="$HOME/.zshrc"
 SSH_DIR="$HOME/.ssh"
+LOCAL_BIN="$HOME/.local/bin"
 
 # Your personal zsh config repo, cloned from <github-username>/zshrc.
 DOTFILES_REPO="zshrc"
@@ -188,6 +189,21 @@ step_names() {
   ok "Named your Mac."
 }
 
+step_claude_code() {
+  if have claude || [[ -x "$LOCAL_BIN/claude" ]]; then
+    ok "Claude Code is installed"
+  else
+    log "Installing Claude Code"
+    curl -fsSL https://claude.ai/install.sh | bash || die "Claude Code installation failed."
+    ok "Claude Code installed."
+  fi
+
+  # Put ~/.local/bin on PATH for future shells…
+  zshrc_block "claude" "export PATH=\"\$HOME/.local/bin:\$PATH\""
+  # …and for the rest of this run, so `claude` is usable immediately.
+  [[ ":$PATH:" == *":$LOCAL_BIN:"* ]] || export PATH="$LOCAL_BIN:$PATH"
+}
+
 step_homebrew() {
   if [[ -n "$(brew_prefix)" ]]; then
     # Already installed — just make sure it's on PATH for this process.
@@ -345,6 +361,7 @@ main() {
   step_names        # first, before anything else
   ensure_local
 
+  step_claude_code
   step_homebrew     # may respawn + exit
   step_github_cli
   step_github_auth
