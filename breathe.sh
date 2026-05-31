@@ -113,12 +113,11 @@ zshrc_block() {
 # interactive shell, so it sources ~/.zshrc (picking up any env we just wrote)
 # before running breathe again.
 spawn_new_shell() {
-  log "Opening a fresh shell to continue…"
   info "(this window can be closed)"
   osascript >/dev/null 2>&1 <<APPLESCRIPT
 tell application "Terminal"
   activate
-  do script "zsh '$BREATHE_BIN'"
+  do script "zsh '$BREATHE_BIN' $*"
 end tell
 APPLESCRIPT
 }
@@ -163,6 +162,7 @@ step_homebrew() {
 
   ok "Homebrew installed."
   # PATH won't update in this shell — hand off to a fresh one.
+  log "Opening a fresh shell to continue…"
   spawn_new_shell
   exit 0
 }
@@ -261,15 +261,24 @@ step_dotfiles() {
 
 finish() {
   print -- ""
-  ok "${C_BOLD}All done — your Mac is breathing.${C_RESET}"
+  ok "${C_BOLD}All done.${C_RESET}"
+  info "Opening a fresh shell with your new config…"
+  # Hand off to a brand-new shell that loads the updated ~/.zshrc (brew,
+  # dotfiles, etc.) and breathes the final word.
+  spawn_new_shell --welcome
+  exit 0
+}
+
+# The first breath of the fresh shell.
+welcome() {
+  print -- ""
+  ok "${C_BOLD}Your Mac is breathing.${C_RESET}"
   print -- ""
   print -- "${C_DIM}    And the LORD God formed man of the dust of the ground, and${C_RESET}"
   print -- "${C_DIM}    breathed into his nostrils the breath of life; and man${C_RESET}"
   print -- "${C_DIM}    became a living soul.${C_RESET}"
   print -- "${C_DIM}                                              — Genesis 2:7${C_RESET}"
   print -- ""
-  # Open a fresh shell so the new ~/.zshrc (brew, dotfiles, etc.) is loaded.
-  spawn_new_shell
 }
 
 # ----------------------------------------------------------------------------
@@ -278,6 +287,13 @@ finish() {
 
 main() {
   [[ "$(uname -s)" == "Darwin" ]] || die "breathe only runs on macOS."
+
+  # The fresh shell spawned at the very end just breathes the final word.
+  if [[ "${1:-}" == "--welcome" ]]; then
+    welcome
+    return 0
+  fi
+
   ensure_local
   banner
 
